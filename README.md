@@ -7,3 +7,4 @@ The program tries to connect with the network one time, if it fails, it takes Nr
 In Version Dual_USB_NTRIP_Mehrere_5.12.2020 you can also use Ntrip directly with an handy hotspot or router.
 You can input 3 Networks, for example, 3 different User with different handy hotspots.
 The program scans WiFi and connect with the first found, if it fails, it takes Nrtip over AGopengps.
+At the moment is no message send back to Ntrip caster. !!!!!
