@@ -9,3 +9,4 @@ You can install a button, for scanning WiFi again.
 Also a message is send back to Ntrip server. !!!!!
 Single_Ntrip is similar to Dual, but only one ardusimple F9P.
 This 2 versions work with USB
+The Photo is a symbll wireing. the Gpio Pin for LED is 2 and Gpio Pin for Ntrip is 4
