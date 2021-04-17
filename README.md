@@ -10,5 +10,6 @@ Also a message is send back to Ntrip server. !!!!!
 Single_Ntrip is similar to Dual, but only one ardusimple F9P.
 This 2 versions work with USB
 The Photo is a symbll wireing. the Gpio Pin for LED is 2 and Gpio Pin for Ntrip is 4
-Dual_COre_Beta3 is a testversion where both cores are use. One for WiFi and second for position.
+Dual_COre_Beta5 is a testversion where both cores are use. One for WiFi and second for position.
 The benefit is that you have no break in AgopenGPS when Wifi make a break.
+Ntrip with APOS is possible.
