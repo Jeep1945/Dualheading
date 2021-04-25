@@ -13,3 +13,4 @@ The Photo is a symbll wireing. the Gpio Pin for LED is 2 and Gpio Pin for Ntrip 
 Dual_COre_5 is a version where both cores are in use. One for WiFi and second for position.
 The benefit is that you have no break in AgopenGPS when Wifi make a break.
 Ntrip with APOS is possible.
+By the two Ethernet Version, you can use Ntrip from a Hotspot,Router or from AGopenGPS
