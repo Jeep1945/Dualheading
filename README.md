@@ -2,7 +2,7 @@
 Heading for autonomous driving, specially for AGopenGPS. 
 With an ESP32 and 2 Ardusimple F9P, heading and Roll for a vehicle is calculated. 
 A little instruction is at the begin of every sketch. 
-In Version Dual_usb_Ethernet you can use Ntrip directly with an handy hotspot or router.
+In Version Dual_usb_Ethernet you connect by USB or Ethernet an you can use Ntrip directly with an handy hotspot or router.
 You can input 5 Networks, for example, 5 different User with different handy hotspots.
 The program scans WiFi and connect with the first found, if it fails, it tries again.
 You can install a button, for scanning WiFi again pin 4 connect to GND.
