@@ -2,23 +2,40 @@
 
 void Core2code( void * pvParameters ) {
 
-  delay(3000);
+  vTaskDelay(3000);
 
   for (;;) { //main loop core2
 
     if (Serial.available()) {      // If RTCM3 comes in Serial (USB),
       char C = Serial.read();      // read a byte, then
       Serial1.write(C);            // send it out Serial1 from 16 to simpleRTK RX 1. Antenna = RTCM
+      if (C != '  ') {             // if the byte is a newline character
+        ntripcheck();
+      }
+      ntriptime_from_AgopenGPS = millis();
+    }
+    else {
+      ntripcheck();
+    }
+    if (Ntriphotspot == 0) {
+      doEthUDPNtrip ();  // If RTCM3 comes in received by Ethernet
+    }
+    if ((Ntriphotspot == 1) && (ntrip_from_AgopenGPS == 0) && (WiFi.status() == WL_CONNECTED)) { //  Ntrip_begin_Time
+      if (ntrip_c.available()) {         // If RTCM3 comes in received by WIFI
+        Serial1.write(ntrip_c.read());   // read RTCM3  and send from ESP32 16 to simpleRTK RX 1. Antenna = RTCM
+      }
+      ntriptime_from_ESP32 = millis();
     }
 
-        if (send_Data_Via == 1) {
-          doUDPNtrip ();  // If RTCM3 comes in received by WiFi
-        }
-    
     if (Serial1.available()) { // If anything comes in Serial1
       inByte = Serial1.read(); // read it and send for NMEA_PAOGI
       NMEA_read();
     }
+    else {
+     // Serial.println(" Es stimmt was mit der Positionsantenne nicht! ");
+     delay(1);
+    }
+    if ((Ntriphotspot == 1) && (GGA_Send_Back_Time != 0))  sendGGA();
 
     if (Serial2.available()) {         // If anything comes in Serial2
       incoming_char = Serial2.read();  // ESP32 read RELPOSNED from F9P
@@ -40,7 +57,8 @@ void Core2code( void * pvParameters ) {
 
       if (CK_A == ubxmessage.rawBuffer[70] && CK_B == ubxmessage.rawBuffer[71]) {
         rollundheading();
-        PAOGI_builder();
+//        PAOGI_builder();
+        PAOGI1_builder();
       }
       else {
         // Serial.println("ACK Checksum Failure: ");
@@ -48,7 +66,7 @@ void Core2code( void * pvParameters ) {
       i = 0;
     }
     // Wifi LED
-    if (send_Data_Via == 1) {
+    if (Ntriphotspot_an == 1) {
       digitalWrite(LED_ntrip_ON, LOW);
     }
     else {

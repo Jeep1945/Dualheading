@@ -27,7 +27,7 @@ TaskHandle_t Core2;
 byte Eth_myip[4] = { 10, 0, 0, 22 };//IP address to send UDP data via router to tablett
 int AntDistance = 95;       // distance between the two antennas in cm,+, 0 for automatic distance
 double headingcorr = 90;     // right antenna A , left antenna B;
-int tractorhight = 280;   // roll is in Position calculated, in AgOpenGPS mit 10cm
+int tractorhight = 280;   // roll is in Position calculated, in AgOpenGPS mit 0 cm
 int WiFi_scan_Delay = 1;      // for router use 50 sec delay
 //bool send_amatron_nmea = true;   // true for sending, false for not
 bool send_amatron_nmea = false;    // true for sending, false for not
@@ -39,19 +39,20 @@ byte Eth_CS_PIN = 5;       //CS PIN with SPI Ethernet hardware W 5500  SPI confi
 int Ntriphotspot = 0;  // 0 = Ntrip from AGopenGPS, 1 = Ntrip direct with hotspot or router
 // with Ntriphotspot = 0, no OTA possible
 
-char WIFI_Network1[24] = "";            // WiFi network Client name
-char WIFI_Password1[24] =  "";        // WiFi network password
-char WIFI_Network2[24] =  "";            // WiFi network Client name
-char WIFI_Password2[24] =  "";        // WiFi network password
-char WIFI_Network3[24] =  "";            // WiFi network Client name
-char WIFI_Password3[24] =  "";        // WiFi network password
-char WIFI_Network4[24] =  "";            // WiFi network Client name
-char WIFI_Password4[24] =  "";        // WiFi network password
-char WIFI_Network5[24] =  "";            // WiFi network Client name
-char WIFI_Password5[24] =  "";        // WiFi network password
-char WIFI_Network6[24] =  "";            // WiFi network Client name
-char WIFI_Password6[24] =  "";        // WiFi network password
 
+  char WIFI_Network1[24] = "";            // WiFi network Client name
+  char WIFI_Password1[24] =  "";        // WiFi network password
+  char WIFI_Network2[24] =  "";            // WiFi network Client name
+  char WIFI_Password2[24] =  "";        // WiFi network password
+  char WIFI_Network3[24] =  "";            // WiFi network Client name
+  char WIFI_Password3[24] =  "";        // WiFi network password
+  char WIFI_Network4[24] =  "";            // WiFi network Client name
+  char WIFI_Password4[24] =  "";        // WiFi network password
+  char WIFI_Network5[24] =  "";            // WiFi network Client name
+  char WIFI_Password5[24] =  "";        // WiFi network password
+  char WIFI_Network6[24] =  "";            // WiFi network Client name
+  char WIFI_Password6[24] =  "";        // WiFi network password
+ 
 #define WIFI_TIMEOUT_MS 50000
 int GGA_Send_Back_Time = 0;  // after how many seconds a GGA msg is send back to Nripserver
 
@@ -59,6 +60,7 @@ char Ntrip_host[40] = "";  //"ntrip caster host";
 char Ntrip_mntpnt[40] = "";         //"ntrip caster's mountpoint";
 char Ntrip_user[40] = "";       //"ntrip caster's client user";
 char Ntrip_passwd[40] = "";           //"ntrip caster's client password";
+// aufgespielt am 21.11.2021
 
 int Ntrip_httpPort = 2101;              //port 2101 is default port of NTRIP caster
 
@@ -109,14 +111,14 @@ byte UDPPAOGIMsg[120];
 
 // Ntrip
 NTRIPClient ntrip_c;
-byte WiFi_netw_nr = 0; 
+byte WiFi_netw_nr = 0;
 String RTCM_Packet;
 unsigned long startSend_back_Time = millis();
 unsigned long ntriptime_from_AgopenGPS = millis();
 unsigned long WiFi_scan_Delay_Time = millis();
 unsigned long Amatron_begin_Time = millis();
-unsigned long GPSagetime = millis();
 unsigned long Ntrip_begin_Time = millis();
+unsigned long OTA_begin_Time = millis();
 
 bool OTA_update = false;
 int wait = 30000, WiFi_scan_Versuch = 1;
@@ -148,10 +150,6 @@ int m;
 
 IPAddress Eth_ipDestination;
 
-// turn a round time
-int Starttime = millis(), Countdurch = 0;
-int Core1_time = millis(), Core1_break = 10000;
-
 // Heading
 double heading, headingUBX, headingzuvor = 0, headingzuvorVTG;
 double headingUBXmin, headingUBXmax, headingVTGmin, headingVTGmax;
@@ -162,11 +160,14 @@ double speeed = 0, speeed1 = 0, headingnord, speeedzuvor = 0, speeedmin = 0.3, s
 int rollaktiv = true;     // true roll activated
 float rollCorrectionDistance = 0.00;
 double rollnord = 0.0, rolleast = 0.0;
+double rollnord1 = 0.0, rolleast1 = 0.0;
 double rollnord_before = 0.0, rolleast_before = 0.0;
 double relPosD, relPosDH;
 double rollzuvor = 0;
 double PI180 = 57.295791;
 double baseline, baseline1, baselineHorizontal;
+double fixnorddeci, fixeastdeci; // coordinates in decimalen
+double fixnorddeci_old, fixeastdeci_old; // coordinates in decimalen
 
 byte CK_A = 0, CK_B = 0;
 byte incoming_char;
@@ -178,19 +179,28 @@ String VTGSatz = "", GGASatz_old = "", GGAnord = "", GGAeast = "", GGAZeit = "",
 int j = 0, j2 = 0, jGGA = 0, jGGA2 = 0, jGGA3 = 0, jGGA4 = 0, jGGA5 = 0, jGGA6 = 0, jGGA7 = 0, jGGA78 = 0;
 int jVTG1 = 0, jVTG2 = 0, jVTG3 = 0, jVTG4 = 0, jVTG5 = 0;
 String GPSquali = "", WEcoordinaten, NScoordinaten, GGASat, GGAHDop;
-String GGASatz = "", GGASatz_Korr, VTGSatz_Korr = "", GGASatz_send_back1 = "", GGASatz_send_back2 = "";
+String GGASatz = "", GGASatz_Korr, VTGSatz_Korr = "", GGASatz_send_back = "";
 int GPSqualin1 = 0, GPSqualin2 = 1, GPSqualinzuvor = 1, GPSqualintime = 1, GGA_check = 0;
 String ZDASatz = "", GGA_hDop, GGA_seahigh;
 int  i = 0, ij = 0;
 double GGAZeitNummerbevor, GGAZeitNummer;
 double GGA_hDops, GGAage, GGA_seahighs;
 
-
 // PAOGI erstellen
-bool Paogi_true = true;
-String RollHeadingrest = "", RollHeadingrest_befor = "", BS =",";
+bool Paogi_true_UBX = true, Paogi_true = true;
+String RollHeadingrest = "", RollHeadingshit = "", RollHeadingrest_befor = "", BS = ",";
 int Paogi_Long, Coodinate_check1, Coodinate_check2, heading_check1 = 0;
-int Paogi_Shit = 0;
+int Paogi_Long1, Coodinate1_check1, Coodinate1_check2, heading1_check1 = 0;
+int Paogi_Shit = 0, Paogi_Shit1 = 0;
+
+//UBX
+double speedUBXint, UBX_lon, UBX_lat;
+int UBX_lon_int, UBX_lat_int;
+double UBX_lon_double, UBX_lat_double, UBX_time1, UBX_time2, UBX_time3, UBX_time4;
+int UBX_time1i, UBX_time2i, UBX_time3i, UBX_time4i, UBX_fixtypei, UBX_Satsi, UBX_Sealeveli;
+String speedUBXstr, UBX_time, UBX_time_befor;
+double UBX_Sats, UBX_Sealeveld, UBX_DOP, UBX_fixtype, UBX_Sealevel, UBX_timed;
+
 
 // Chechsum controll
 String checksum = "", checksum_GGA = "", checksum_GGA_send = "", checksum_VTG = "", checksum_VTG_send = "";
@@ -273,11 +283,6 @@ union UBXMessagePVT {
   byte rawBufferPVT[150];
 } ubxmessagePVT;
 
-//UBX
-double speedUBXint;
-String speedUBXstr;
-
-
 //bool debugmode = true;  // GGA,VTG,
 bool debugmode = false;
 //bool debugmode1 = true;  // Heading
@@ -286,8 +291,8 @@ bool debugmode1 = false;
 bool debugmode2 = false;
 //  bool debugmode3 = true;  // roll
 bool debugmode3 = false;
-//bool debugmode4 = true;  //
-bool debugmode4 = false;
+//bool debugmode_UBX = true;  //  Protocoll UBX einlesen
+bool debugmode_UBX = false;
 //  bool debugProtokoll = true;  //Protocoll TestStation
 bool debugProtokoll = false;
 //bool debugmode_amatron = true;  //Protocoll Amatron
@@ -332,6 +337,7 @@ void setup() {
   ntriptime_from_ESP32 = millis();
   WiFi_scan_Delay_Time = millis();
   Amatron_begin_Time = millis();
+  OTA_begin_Time = millis();
 
   delay(100);
   if  ((WIFI_Network1 == "") || (Ntriphotspot == 0)) {
@@ -361,7 +367,11 @@ void setup() {
 }
 
 void loop() {
-//  if (OTA_update) ArduinoOTA.handle();
-  delay(10);
 
+  /* if ((WiFi.status() == WL_CONNECTED) && (Ntriphotspot == 1) && ((millis() - OTA_begin_Time) < 36000)) {
+     OTA_update = true;
+     ArduinoOTA.handle();
+    }
+    else  OTA_update = false;
+  */  delay(10);
 }
