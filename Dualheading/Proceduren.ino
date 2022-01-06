@@ -1,77 +1,47 @@
-//Nmeacheck---------------------------------------------------------------------------------------------
+//Paogicheck---------------------------------------------------------------------------------------------
 
 void Paogicheck() {
 
-  if ((Paogi_Long < 91) || (Paogi_Long > 98) || (jGGA6 != 45)) {
-    Paogi_true = false;
+  if ((Paogi_Long < 91) || (Paogi_Long > 105) || (jGGA6 != 45)) {
+    Paogi_true_UBX = false;
   }
-  if ((abs(GGAZeitNummer - GGAZeitNummerbevor) > 45) && (GGA_check < 3))
-  { Paogi_true = false;
-    GGA_check++;
-  }
-  else {
-    GGAZeitNummerbevor = GGAZeitNummer;
-    GGA_check = 0;
-  }
-  if ((GPSqualin1 < 0) || (GPSqualin1 > 5))  Paogi_true = false;
-  if ((GGASats < 10) || (GGASats > 12))  Paogi_true = false;
-  if ((GGA_hDops < 0) || (GGA_hDops > 2))  Paogi_true = false;
-  if ((GGA_seahighs < -100) || (GGA_seahighs > 2000))  Paogi_true = false;
-  if ((speeed1 < 0) || (speeed1 > 55))  Paogi_true = false;
-  if ((heading < 0) || (heading > 360))  Paogi_true = false;
-  if ((roll < -30) || (roll > 30))  Paogi_true = false;
-  if ((ntrip_from_AgopenGPS != 0) && (ntrip_from_AgopenGPS != 1))  Paogi_true = false;
-  if ((Ntriphotspot_an != 0) && (Ntriphotspot_an != 1))  Paogi_true = false;
+  if ((heading == 0) || (heading == 90) || (heading == 180) || (heading == 270))  Paogi_true_UBX = false;
+  if ((speedUBXint < 0) || (speedUBXint > 55))  Paogi_true_UBX = false;
+  if ((heading < 0) || (heading > 360))  Paogi_true_UBX = false;
+  if (UBX_Satsi < 14)  Paogi_true_UBX = false;
+  if ((roll < -30) || (roll > 30))  Paogi_true_UBX = false;
 }   // end void Paogicheck
 
-//sendGGA---------------------------------------------------------------------------------------------
 
-void sendGGA() {
-  // char GGASatz_send_back[100] = "$GPGGA,051601.650,4812.439,N,01633.778,E,1,12,1.0,0.0,M,0.0,M,,*60";//hc create via www.nmeagen.org
+//Coordinaten_check---------------------------------------------------------------------------------------------
 
-  if ((Ntriphotspot == 1) && ((millis() - startSend_back_Time) > (GGA_Send_Back_Time * 1000)) && (GPSqualin1 > 0)) {  // send back GGA to Ntripserver
-    ntrip_c.print(GGASatz_send_back1);
-    ntrip_c.print("\r\n");
-    //    Serial.println(GGASatz_send_back2);
-    //    Serial.println(GGASatz_send_back1);
-    startSend_back_Time = millis();
-  }
-} // end void sendGGA
+void  Coordinaten_check() {
 
-//doUDPNtrip---------------------------------------------------------------------------------------------
-
-void doEthUDPNtrip() {
-  unsigned int packetLenght = Eth_udpNtrip.parsePacket();
-  //  Serial.println(packetLenght);
-  if (packetLenght > 0) {
-    //   Serial.println(packetLenght);
-    Eth_udpNtrip.read(Eth_NTRIP_packetBuffer, packetLenght);
-    //Eth_udpNtrip.flush();
-    //     Serial.println("Hallo 2");
-    for (unsigned int ik = 0; ik < packetLenght; ik++)
-    {
-      Serial1.write(Eth_NTRIP_packetBuffer[ik]);
-    }
-    //    Serial1.println(); //really send data from UART buffer
-  }  // end of Packet
-} // end doEthUDPNtrip
-
-
-//ntripcheck---------------------------------------------------------------------------------------------
-
-void ntripcheck() {
-  if (ntriptime_from_AgopenGPS > (millis() - 4000)) {
-    ntrip_from_AgopenGPS = 1;
-    NtripCheckTrue = true;
+//  Serial.print("      rollnord  "  + String(rollnord));
+//  Serial.println("    rolleast  "  + String(rolleast));
+  //  Serial.println(" 1  " + String(rolleast1));
+  if ((abs(rolleast - rolleast_before) > 15000) && (Coodinate1_check1 < 1)) {
+    Paogi_true_UBX = false;
+    Coodinate1_check1++;
   }
   else {
-    ntrip_from_AgopenGPS = 0;
-    if (NtripCheckTrue) {
-      if (Ntriphotspotoriginal == 1)
-      {
-        //      ESP.restart();
-      }
-    }
-    NtripCheckTrue = false;
+    rolleast_before = rolleast;
+    Coodinate1_check1 = 0;
   }
-} // end void ntripcheck
+  //  Serial.println(" 2  " + String(rolleast1));
+  if ((rolleast1 < 1000) && (rolleast1 > 0)) WEcoordinaten = ("00" + String(rolleast1, 7));
+  if ((rolleast1 >= 1000) && (rolleast1 < 10000)) WEcoordinaten = ("0" + String(rolleast1, 7));
+  if (rolleast1 >= 10000) WEcoordinaten = String(rolleast1, 7);
+
+  if ((abs(rollnord - rollnord_before) > 15000) && (Coodinate1_check2 < 1)) {
+    Paogi_true_UBX = false;
+    Coodinate1_check2++;
+  }
+  else {
+    rollnord_before = rollnord;
+    Coodinate1_check2 = 0;
+  }
+  if (rollnord1 >= 1000)  NScoordinaten = String(rollnord1, 7);
+  if (rollnord1 < 1000)  NScoordinaten = ("0" + String(rollnord1, 7));
+
+}  // end void Coordinaten_check

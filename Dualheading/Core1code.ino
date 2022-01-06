@@ -13,6 +13,7 @@ void Core1code( void * pvParameters ) {
   //  vTaskDelay(100);
 
   for (;;) { // MAIN LOOP FOR THIS CORE
+    
 
     if ((ntrip_from_AgopenGPS == 1) || (Ntriphotspot == 0)) {
       WiFi.disconnect();
@@ -21,6 +22,8 @@ void Core1code( void * pvParameters ) {
     buttonState = digitalRead(Button_ReScan);
     if ((buttonState == 0) && (ntrip_from_AgopenGPS == 0)) {
       //      ESP.restart();
+      WiFi.disconnect();
+     digitalWrite(LED_ntrip_ON, LOW);
       scan_WiFi_connections();
     }
     if ((Ntriphotspot == 1 ) && (millis() - WiFi_scan_Delay_Time > (WiFi_scan_Delay * 1000))) {

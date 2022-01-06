@@ -36,79 +36,16 @@ void NMEA_read() {
           break;
         }
       }
-      checksum_GGA_send = (nmea.substring(j_checksum_GGA, j_checksum_GGA + 2));  // actuell send checksum
-      for (XOR = 0, j = 0; j < nmea.length(); j++) { // Berechnung Checksumme
-        c = (unsigned char)nmea.charAt(j);
-        if (c == '*') break;
-        if ((c != '$') && (c != '!')) XOR ^= c;
-      }
-      checksum_GGA = String(XOR, HEX);
-      checksum_GGA.toUpperCase();
-      //      Serial.print(GGASatz);
-      //      Serial.print(" checksum_GGA_send:  " + checksum_GGA_send);
-      //      Serial.println(" checksum_GGA:   " + checksum_GGA);
-
-      if ((checksum_GGA_send != checksum_GGA) || (jGGA6 != 45)) {
-        //        Serial.println(" Checksumme ist nicht in Ordnung");
-        nmea = GGASatz_old;
-      }
-      else {
-        GGASatz_old = nmea;
-      }
-
+//      if () 
       GGAWestEast = (nmea.substring(jGGA6 + 1, jGGA6 + 2));  // looks for W or E in nmea
       GGANordSued = (nmea.substring(jGGA4 + 1, jGGA4 + 2));  // looks for N or S in nmea
-      GGAZeit = (nmea.substring(jGGA3 - 10, jGGA3 - 1)); //Data from GGAZeit
-      GGAZeitNummer = GGAZeit.toDouble();
-      GGAnord = (nmea.substring(jGGA3, jGGA4)); //Data from GGAnord
-      GGAeast = (nmea.substring(jGGA5, jGGA6)); //Data from GGAeast
-      GGASat = (nmea.substring(jGGA2 + 2, jGGA2 + 4)); //How many Sats
-      GGASats = GGASat.toDouble();
-      GGA_hDop = (nmea.substring(jGGA2 + 5, jGGA2 + 9)); //How many hDop;
-      //      Serial.println(nmea.substring(jGGA2 + 6, jGGA2 + 7));
-      if (nmea.substring(jGGA2 + 6, jGGA2 + 7) == ".")   GGA_hDops = GGA_hDop.toDouble();
-      else GGA_hDops = -1;
-      //      Serial.println(String(jGGA2) + "  " +String(jGGA2 + 9));
-
-      //      GGA_seahigh = String(94.009);
-      GGA_seahigh = (nmea.substring(jGGA2 + 10, jGGA7));
-      GGA_seahighs = GGA_seahigh.toDouble();
-      //      Serial.println(jGGA7);
-      //      Serial.println(GGA_seahigh);
-      GGAdaten = (nmea.substring(6, jGGA)); //Data from GGA with high and ,
-      GGAdaten1 = (nmea.substring(jGGA2 + 2, jGGA - 1)); //Data from GGA with high and
       GPSquali = (nmea.substring(jGGA2, jGGA2 + 1));  //GPS Signal Indikator
       GPSqualin1 = GPSquali.toDouble();
-      if (GPSqualin1 == 4)  GPSqualintime = millis();
-      if (GPSqualintime  + 15000 > millis())   GPSqualin1 = 4;
-      //      GGAage = (millis() - GPSagetime) ;
-      GGAage = 0;
-      GGASatz_Korr = (nmea.substring(0, j_checksum_GGA));
+      GGA_hDop = (nmea.substring(jGGA2 + 5, jGGA2 + 9)); //How many hDop;
+      GGA_hDops = GGA_hDop.toDouble();
+      //       Serial.println(nmea);
+       GGASatz_Korr = (nmea.substring(0, j_checksum_GGA));
 
-      GGASatz_send_back2 = "$GPGGA,";
-      (GGASatz_send_back2.concat(GGAZeit));
-      (GGASatz_send_back2.concat("0,"));
-      (GGASatz_send_back2.concat(GGAnord.substring(0, 8)));
-      (GGASatz_send_back2.concat(BS));
-      (GGASatz_send_back2.concat(GGANordSued));
-      (GGASatz_send_back2.concat(BS));
-      (GGASatz_send_back2.concat(GGAeast.substring(0, 9)));
-      (GGASatz_send_back2.concat(BS));
-      (GGASatz_send_back2.concat(GGAWestEast));
-      (GGASatz_send_back2.concat(",1,12,1.0,0.0,M,0.0,M,,*"));
-
-      /*      GGASatz_send_back2 = ("$GPGGA," + GGAZeit + "0," + GGAnord.substring(0, 8) + "," + GGANordSued + "," + GGAeast.substring(0, 9) +
-            "," + GGAWestEast + ",1,12,1.0,0.0,M,0.0,M,,*");
-      */
-      for (XOR = 0, j = 0; j < GGASatz_send_back2.length(); j++) { // Berechnung Checksumme
-        c = (unsigned char)GGASatz_send_back2.charAt(j);
-        if (c == '*') break;
-        if ((c != '$') && (c != '!')) XOR ^= c;
-      }
-      checksum = String(XOR, HEX);
-      checksum.toUpperCase();
-      //      GGASatz_send_back1 = (GGASatz_send_back2.concat(checksum));
-      GGASatz_send_back1 = GGASatz_send_back2 + checksum;
 
       if (debugmode)
       {
@@ -206,6 +143,8 @@ void NMEA_read() {
 
   if (ij > 99) {
     UBXSpeed();
+    UBXCoordinats();
+    UBX_Data();
     ij = 0;
   }
 } //Ende NMEA_PAOGI

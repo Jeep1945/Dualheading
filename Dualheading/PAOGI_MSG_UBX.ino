@@ -1,36 +1,14 @@
-void PAOGI_builder() {
+void PAOGI1_builder() {
 
   speeed1 = speeed;
 
-  Paogi_true = true;
+  Paogi_true_UBX = true;
 
   // build the PAOGI msg
-  rolleast = (rolleast * 0.0000001);
-  if ((abs(rolleast - rolleast_before) > 2) && (Coodinate_check1 < 4)) {
-    Paogi_true = false;
-    Coodinate_check1++;
-  }
-  else {
-    rolleast_before = rolleast;
-    Coodinate_check1 = 0;
-  }
-  if ((rolleast < 1000) && (rolleast > 0)) WEcoordinaten = ("00" + String(rolleast, 7));
-  if ((rolleast >= 1000) && (rolleast < 10000)) WEcoordinaten = ("0" + String(rolleast, 7));
-  if (rolleast >= 10000) WEcoordinaten = String(rolleast, 7);
 
-  rollnord = (rollnord  * 0.0000001);
-  if ((abs(rollnord - rollnord_before) > 2) && (Coodinate_check2 < 4)) {
-    Paogi_true = false;
-    Coodinate_check2++;
-  }
-  else {
-    rollnord_before = rollnord;
-    Coodinate_check2 = 0;
-  }
-  if (rollnord >= 1000)  NScoordinaten = String(rollnord, 7);
-  if (rollnord < 1000)  NScoordinaten = ("0" + String(rollnord, 7));
+  Coordinaten_check();
 
-  if ((heading > 3) && (heading < 357) && (GPSqualin1 > 3)) {
+  if ((heading > 5) && (heading < 355) && (GPSqualin1 > 3)) {
     if ((abs(heading - headingzuvor) > 3) && (heading_check1 < 4)) {
       if (speeed > 0.5) {
         heading = headingnord;
@@ -45,9 +23,18 @@ void PAOGI_builder() {
   }
   else headingzuvor = heading;
 
+  UBX_Timesec();
+//  Serial.print("  Time länge  "  + String(UBX_time.length()));
+
+  if (UBX_time.length() != 9) UBX_time = UBX_time_befor;
+  if ((GPSqualin1 < 0) || (GPSqualin1 > 5))  GPSqualin1 = 4;
+  if ((UBX_Satsi < 0) || (UBX_Satsi > 35))  UBX_Satsi = 12;
+  if ((GGA_hDops < 0) || (GGA_hDops > 2))  GGA_hDops = 1.01;
+  if ((UBX_Sealeveld < -100) || (UBX_Sealeveld > 2000))  UBX_Sealeveld = 200;
+
 
   RollHeadingrest = "$PAOGI,";
-  (RollHeadingrest.concat(GGAZeit));
+  (RollHeadingrest.concat(UBX_time));
   (RollHeadingrest.concat(BS));
   (RollHeadingrest.concat(NScoordinaten));
   (RollHeadingrest.concat(BS));
@@ -59,13 +46,13 @@ void PAOGI_builder() {
   (RollHeadingrest.concat(BS));
   (RollHeadingrest.concat(GPSqualin1));
   (RollHeadingrest.concat(BS));
-  (RollHeadingrest.concat(GGASats));
+  (RollHeadingrest.concat(UBX_Satsi));
   (RollHeadingrest.concat(BS));
   (RollHeadingrest.concat(GGA_hDops));
   (RollHeadingrest.concat(BS));
-  (RollHeadingrest.concat(GGA_seahigh));
+  (RollHeadingrest.concat(UBX_Sealeveld));
   (RollHeadingrest.concat(BS));
-  (RollHeadingrest.concat(GGAage));
+  (RollHeadingrest.concat("0.00"));
   (RollHeadingrest.concat(BS));
   (RollHeadingrest.concat(speedUBXint));
   (RollHeadingrest.concat(BS));
@@ -79,10 +66,10 @@ void PAOGI_builder() {
   (RollHeadingrest.concat(BS));
   (RollHeadingrest.concat(Ntriphotspot_an));
   (RollHeadingrest.concat(BS));
-//  (RollHeadingrest.concat(Paogi_Shit));
+//  (RollHeadingrest.concat(Paogi_Shit1));
 //  (RollHeadingrest.concat(BS));
   (RollHeadingrest.concat("*"));
-
+  RollHeadingshit = RollHeadingrest;
   //  Serial.println(RollHeadingrest);
 
   //     RollHeadingrest = "$PAOGI," + GGAZeit + "," + NScoordinaten + "," + GGANordSued + "," + WEcoordinaten + "," + GGAWestEast + "," + String(GPSqualin1) + "," + String(GGASats) + "," + String(GGA_hDop) + "," + String(GGA_seahigh) + "," + String(GGAage) + "," + speedUBXint + "," + String(heading) + "," + String(roll) + ",,," + String(ntrip_from_AgopenGPS) + "," + String(Ntriphotspot_an) + ",*";
@@ -104,9 +91,10 @@ void PAOGI_builder() {
 
   Paogicheck();
 
+
   //  if ((Paogi_Long > 90) && (Paogi_Long < 97) && (jGGA6 == 45))
-  
-  if (Paogi_true)
+
+  if (Paogi_true_UBX)
   {
     if (send_Data_Via == 0) {
       unsigned int Bytelaenge = Paogi_Long + 1;
@@ -132,15 +120,15 @@ void PAOGI_builder() {
     }
   }
   else  {
-    Paogi_Shit++;
-    Paogi_true = true;
-    /*    Serial.println(" ");
-        Serial.println(" ");
-        Serial.println(RollHeadingrest);
-        Serial.println("Shit ist Sch.. " + String(Paogi_Long));
-        Serial.println(" ");
-        Serial.println(" ");
-    */
+    Paogi_Shit1++;
+    Paogi_true_UBX = true;
+/*    Serial.println(" ");
+    Serial.println(" ");
+    Serial.println(RollHeadingshit);
+    Serial.println("Shit ist Sch.. " + String(Paogi_Long));
+    Serial.println(" ");
+    Serial.println(" ");
+*/
   }
   if (send_amatron_nmea) {
     GGASatz_Korr.replace(GGAnord, NScoordinaten);
