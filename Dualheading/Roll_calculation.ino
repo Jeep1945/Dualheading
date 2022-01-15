@@ -14,6 +14,7 @@ void rollcalc()
   if ((!rollaktiv) || (abs(roll) > 30)) {
     rollCorrectionDistance = 0;
     baselineHorizontal = baseline;
+    if (rollaktiv == 0) baselineHorizontal = 0;  
   }
   // rollCorrectionDistance = 0;
   // baselineHorizontal = 0;
