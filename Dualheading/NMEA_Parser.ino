@@ -11,9 +11,10 @@ void NMEA_read() {
   if ((inByte == 13) && (start == 1)) { // CR > Datensatzende > NMEA ausgeben
     start = 0;
 
-    if (nmea.substring(1, 6) == "GNGGA") {   // Data from GGAm with high and ,
+    if (nmea.substring(3, 6) == "GGA") {   // Data from GGA with high and ,
       for (j = 0; j < nmea.length(); j++) {
         c = (unsigned char)nmea.charAt(j);
+        //        Serial.println(nmea);
         if ((c == ',') && (j > 8)  && (j < 27)) {
           jGGA3 = j + 1;
         }
@@ -36,7 +37,30 @@ void NMEA_read() {
           break;
         }
       }
-//      if () 
+      GGASatz = nmea;
+      if ((millis() - Single_begin_Time) > 100) {
+        Single_begin_Time = millis();
+        BytelaengeGGA = GGASatz.length() + 1;
+        if (BytelaengeGGA < 100) {
+          if ((send_Data_Via == 0) && (!Dual_Antenna)) {
+            Serial.println(GGASatz);
+          }
+          if ((send_Data_Via > 0) && (!Dual_Antenna)) {
+            GGASatz.getBytes(ReplyBufferGGA, BytelaengeGGA);
+            ReplyBufferGGA[BytelaengeGGA - 1] = 0x0D;
+            ReplyBufferGGA[BytelaengeGGA] = 0x0A;
+            if (send_Data_Via == 1) {
+              Eth_udpPAOGI.beginPacket(Eth_ipDestination, portDestination);
+              Eth_udpPAOGI.write(ReplyBufferGGA, BytelaengeGGA + 1);
+              Eth_udpPAOGI.endPacket();
+            }
+            if (send_Data_Via == 2) {
+              udpRoof.writeTo(ReplyBufferGGA, BytelaengeGGA + 1, ipDestination1, portDestination);
+            }
+          }
+        }
+      }
+      //      if ()
       GGAWestEast = (nmea.substring(jGGA6 + 1, jGGA6 + 2));  // looks for W or E in nmea
       GGANordSued = (nmea.substring(jGGA4 + 1, jGGA4 + 2));  // looks for N or S in nmea
       GPSquali = (nmea.substring(jGGA2, jGGA2 + 1));  //GPS Signal Indikator
@@ -44,8 +68,7 @@ void NMEA_read() {
       GGA_hDop = (nmea.substring(jGGA2 + 5, jGGA2 + 9)); //How many hDop;
       GGA_hDops = GGA_hDop.toDouble();
       //       Serial.println(nmea);
-       GGASatz_Korr = (nmea.substring(0, j_checksum_GGA));
-
+      GGASatz_Korr = (nmea.substring(0, j_checksum_GGA));
 
       if (debugmode)
       {
@@ -97,6 +120,28 @@ void NMEA_read() {
       else {
         VTGSatz = nmea;
       }
+      if ((millis() - Single_begin_Time_VTG) > 100) {
+        Single_begin_Time_VTG = millis();
+        BytelaengeVTG = VTGSatz.length() + 1;
+        if (BytelaengeVTG < 40) {
+          if ((send_Data_Via == 0) && (!Dual_Antenna)) {
+            Serial.println(VTGSatz);
+          }
+          if ((send_Data_Via > 0) && (!Dual_Antenna)) {
+            VTGSatz.getBytes(ReplyBufferVTG, BytelaengeVTG);
+            ReplyBufferVTG[BytelaengeVTG - 1] = 0x0D;
+            ReplyBufferVTG[BytelaengeVTG] = 0x0A;
+            if (send_Data_Via == 1) {
+              Eth_udpPAOGI.beginPacket(Eth_ipDestination, portDestination);
+              Eth_udpPAOGI.write(ReplyBufferVTG, BytelaengeVTG + 1);
+              Eth_udpPAOGI.endPacket();
+            }
+            if (send_Data_Via == 2) {
+              udpRoof.writeTo(ReplyBufferVTG, BytelaengeVTG + 1, ipDestination1, portDestination);
+            }
+          }
+        }
+      }
 
       VTGspeed = (nmea.substring(jVTG1, jVTG2));        // Ground speed, knots
       speeed = VTGspeed.toDouble();
@@ -109,10 +154,11 @@ void NMEA_read() {
         headingnord = constrain(headingnord, headingVTGmin, headingVTGmax);
         headingzuvorVTG = headingnord;
       }
+      //      Serial.println(nmea);
       if (debugmode1)  Serial.println(" Hallo headingnord  :" + String(headingnord));
       VTGSatz_Korr = (nmea.substring(0, j_checksum_VTG)); //Checksum cut off
       VTGSatz = nmea;
-      if (send_amatron_nmea) {
+      if (send_amatron_nmea == 1) {
         VTGSatz_Korr.replace(VTGheadingnord, String(heading));
         // VTGSatz_Korr.replace(VTGspeed, String(speedUBXint));
         for (XOR = 0, j = 0; j < VTGSatz_Korr.length(); j++) { // Berechnung Checksumme
@@ -126,7 +172,7 @@ void NMEA_read() {
       }
     }  // end VTG
 
-    if (send_amatron_nmea) {
+    if (send_amatron_nmea == 1) {
       if (nmea.substring(3, 6) == "ZDA")  {   // Data from ZDA,
         ZDASatz = nmea;
       }
