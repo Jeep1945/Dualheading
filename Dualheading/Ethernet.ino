@@ -11,6 +11,7 @@ void Eth_Start() {
     Serial.println("Ethernet hardware found, checking for connection");
     if (Ethernet.linkStatus() == LinkOFF) {
       Serial.println("Ethernet cable is not connected.");
+      Ethernet_running = false;
     }
     else {
       Serial.println("Ethernet status OK");
@@ -37,7 +38,7 @@ void Eth_Start() {
         Ethernet.setLocalIP(Eth_myip);
       }
 
-      //      Ethernet_running = true;
+      Ethernet_running = true;
       Serial.print("Ethernet IP of roof module: "); Serial.println(Ethernet.localIP());
       Serial.print("Ethernet sending to IP: "); Serial.println(Eth_ipDestination);
       //init UPD Port sending to AOG

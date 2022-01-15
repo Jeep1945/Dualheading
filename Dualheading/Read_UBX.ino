@@ -9,11 +9,11 @@ void UBX_Data() {
   UBX_Sealevel += (long)ubxmessagePVT.rawBufferPVT[Unit + 9] << 24 ;
   UBX_Sealeveld = UBX_Sealevel / 1000;
   Unit = 76;
-/*  UBX_DOP  = (long)ubxmessagePVT.rawBufferPVT[Unit + 6] ;            // read UBX Number of sats from 1. F9P
-  UBX_DOP += (long)ubxmessagePVT.rawBufferPVT[Unit + 7] << 8;
-  UBX_DOP /=100;  
-*/
-//  if (UBX_DOP > 20) Serial.println(" UBX_DOP  " + String(UBX_DOP));
+  /*  UBX_DOP  = (long)ubxmessagePVT.rawBufferPVT[Unit + 6] ;            // read UBX Number of sats from 1. F9P
+    UBX_DOP += (long)ubxmessagePVT.rawBufferPVT[Unit + 7] << 8;
+    UBX_DOP /=100;
+  */
+  //  if (UBX_DOP > 20) Serial.println(" UBX_DOP  " + String(UBX_DOP));
 }  // end UBXSpeed()
 
 void UBXSpeed() {
@@ -30,7 +30,7 @@ void UBXSpeed() {
 // UBX_Timesec *********************************************************************************
 
 void UBX_Timesec() {
-  UBX_time_befor = UBX_time; 
+  UBX_time_befor = UBX_time;
   int Unit = 8;
   UBX_time1 = (long)ubxmessagePVT.rawBufferPVT[Unit + 6] ;            // read UBX hour from 1. F9P
   UBX_time2 = (long)ubxmessagePVT.rawBufferPVT[Unit + 7] ;            // read UBX min from 1. F9P
@@ -153,9 +153,8 @@ void rollundheading() {
   }
   relPosD = relPosD / 100.0;
 
-  // roll calculation
-  //  rollcodi();
   rollcalc();
+
   if (debugProtokoll) {
     Serial.print(", roll " + String(roll, 2));
     Serial.print(", rollcorr " + String(rollCorrectionDistance, 2));
