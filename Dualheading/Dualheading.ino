@@ -39,9 +39,9 @@ int rollaktiv = 0;     // 0: roll in AOG  1: roll activated in Dualheading
 //  IMPORTANT  // For serial USB 38400 baude not 115400
 
 
-int send_Data_Via = 1;       // send Data via  0: USB, 1: Ethernet, 2: WiFi with router and Ntrip from AOG
+int send_Data_Via = 0;       // send Data via  0: USB, 1: Ethernet, 2: WiFi with router and Ntrip from AOG
 
-int Ntriphotspot = 1;  // 0: Ntrip from AOG(USB or by Ethernet)   1: Ntrip by Ethernet via Router
+int Ntriphotspot = 0;  // 0: Ntrip from AOG(USB or by Ethernet)   1: Ntrip by Ethernet via Router
 //                        2: Ntrip by WiFi via Hotspot or Router  3: Ntrip by WiFi via Router from AOG
 
 //  if router exists, use 1. Network for him
@@ -365,7 +365,7 @@ void setup() {
   Serial.println("Start setup");
   Serial1.begin(115200, SERIAL_8N1, RX1, TX1);
   delay(10);
-  if ((Dual_Antenna == 1) || (send_amatron_nmea)) {
+  if ((Dual_Antenna == 1) || (send_amatron_nmea = 1)) {
     Serial2.begin(115200, SERIAL_8N1, RX2, TX2);
   }
   pinMode(Button_ReScan, INPUT_PULLUP);
