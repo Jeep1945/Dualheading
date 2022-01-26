@@ -1,5 +1,5 @@
 
-String VERS = "Version Dual 1.1   14.01.2022";
+String VERS = "Version Dual 1.1   26.01.2022";
 
 // Dualhead for AGopenGPS
 // Private-use only! (you need to ask for a commercial-use)
@@ -39,9 +39,9 @@ int rollaktiv = 0;     // 0: roll in AOG  1: roll activated in Dualheading
 //  IMPORTANT  // For serial USB 38400 baude not 115400
 
 
-int send_Data_Via = 1;       // send Data via  0: USB, 1: Ethernet, 2: WiFi with router and Ntrip from AOG
+int send_Data_Via = 0;       // send Data via  0: USB, 1: Ethernet, 2: WiFi with router and Ntrip from AOG
 
-int Ntriphotspot = 1;  // 0: Ntrip from AOG(USB or by Ethernet)   1: Ntrip by Ethernet via Router
+int Ntriphotspot = 2;  // 0: Ntrip from AOG(USB or by Ethernet)   1: Ntrip by Ethernet via Router
 //                        2: Ntrip by WiFi via Hotspot or Router  3: Ntrip by WiFi via Router from AOG
 
 //  if router exists, use 1. Network for him
@@ -63,7 +63,6 @@ char WIFI_Password7[24] =  "";        // WiFi network password
 
 #define WIFI_TIMEOUT_MS 50000
 int GGA_Send_Back_Time = 0;  // after how many seconds a GGA msg is send back to Nripserver
-
 
 char Ntrip_host[40] = "";  //"ntrip caster host";
 char Ntrip_mntpnt[40] = "";         //"ntrip caster's mountpoint";
@@ -230,7 +229,7 @@ bool Paogi_true_UBX = true, Paogi_true = true;
 String RollHeadingrest = "", RollHeadingshit = "", RollHeadingrest_befor = "", BS = ",";
 int Paogi_Long, Coodinate_check1, Coodinate_check2, heading_check1 = 0;
 int Paogi_Long1, Coodinate1_check1, Coodinate1_check2, heading1_check1 = 0;
-int Paogi_Shit = 0, Paogi_Shit1 = 0;
+int Paogi_Shit1 = 0;
 
 byte UDPPAOGIMsg[100], UDPVTGMsg[40], UDPGGAMsg[90];
 unsigned int Bytelaenge, BytelaengeVTG, BytelaengeGGA;
@@ -365,7 +364,7 @@ void setup() {
   Serial.println("Start setup");
   Serial1.begin(115200, SERIAL_8N1, RX1, TX1);
   delay(10);
-  if ((Dual_Antenna == 1) || (send_amatron_nmea)) {
+  if ((Dual_Antenna == 1) || (send_amatron_nmea = 1)) {
     Serial2.begin(115200, SERIAL_8N1, RX2, TX2);
   }
   pinMode(Button_ReScan, INPUT_PULLUP);
@@ -448,6 +447,13 @@ void loop() {
     doEthUDPNtrip();  // If RTCM3 comes in received by Ethernet from AOG
   }
 
+  // If RTCM3 comes in received by WiFi from Router ####################################
+  if ((send_Data_Via == 0) && (Ntriphotspot == 2)) { //  Ntrip_begin_Time
+    if (ntrip_c.available()) {         // If RTCM3 comes in received by WIFI
+      Serial1.write(ntrip_c.read());   // read RTCM3  and send from ESP32 16 to simpleRTK RX 1. Antenna = RTCM
+    }
+  }
+
   // If RTCM3 comes in received by Ethernet from Router ####################################
   if ((send_Data_Via == 1) && (Ntriphotspot == 1) && (ntrip_from_AgopenGPS == 0) && (Ethernet_running)) { //  Ntrip_begin_Time
     if (ntrip_e.available()) {         // If RTCM3 comes in received by WIFI
@@ -477,12 +483,12 @@ void loop() {
   //  read NMEA msg from F9P (PVT) and pars them in NMEA_read()   ##############################################
   if (Serial1.available()) { // If anything comes in Serial1
     inByte = Serial1.read(); // read it and send for NMEA_PAOGI
-    NMEA_read();
+NMEA_read();
   }
 
   //  Send GGA MSG back to Base     ###########################################################################
-  if (GGA_Send_Back_Time != 0)  sendGGA_WiFi();
-  if (GGA_Send_Back_Time != 0)  sendGGA_Eth();
+  if ((GGA_Send_Back_Time != 0) && ((send_Data_Via == 2) || (Ntriphotspot == 2)))  sendGGA_WiFi();
+  if ((GGA_Send_Back_Time != 0) && (Ntriphotspot == 0))  sendGGA_Eth();
 
   //  read UBX msg from F9P (heading)    ######################################################################
   if (Dual_Antenna == 1) {
