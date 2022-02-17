@@ -3,8 +3,8 @@
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
 
-const char* ssid = "A1-4d8621";
-const char* password = "ivt2kmm99scl";
+const char* ssid = "xx";
+const char* password = "xx";
 
 
 //UART1 Dateneingang vom ESP32 "DualGPS"
